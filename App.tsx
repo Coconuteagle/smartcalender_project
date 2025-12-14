@@ -88,15 +88,13 @@ const MainLayout = () => (
 
 const App: React.FC = () => {
   return (
-    <ApiKeyProvider>
-      <Routes>
-        <Route path="/payment" element={<Payment />} />
-        <Route path="/success" element={<SuccessPage />} />
-        <Route path="/fail" element={<FailPage />} />
-        <Route path="/" element={<MainLayout />} />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </ApiKeyProvider>
+    <Routes>
+      <Route path="/payment" element={<Payment />} />
+      <Route path="/success" element={<SuccessPage />} />
+      <Route path="/fail" element={<FailPage />} />
+      <Route path="/" element={<MainLayout />} />
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
   );
 };
 
