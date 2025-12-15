@@ -2,29 +2,85 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  :root {
+    /* Dark Theme (Default) */
+    --bg-main: #0f172a; /* slate-900/950 mix anchor */
+    --bg-secondary: #1e293b; /* slate-800 */
+    --bg-tertiary: #334155; /* slate-700 */
+    
+    --text-primary: #f1f5f9; /* slate-100 */
+    --text-secondary: #cbd5e1; /* slate-300 */
+    --text-tertiary: #94a3b8; /* slate-400 */
+
+    --accent-primary: #06b6d4; /* cyan-500 */
+    --accent-secondary: #0891b2; /* cyan-600 */
+    --accent-text: #22d3ee; /* cyan-400 */
+
+    --border-primary: #334155; /* slate-700 */
+    --border-secondary: #475569; /* slate-600 */
+  }
+
+  [data-theme='light'] {
+    /* White Theme */
+    --bg-main: #f8fafc; /* slate-50 */
+    --bg-secondary: #ffffff; /* white */
+    --bg-tertiary: #e2e8f0; /* slate-200 */
+    
+    --text-primary: #0f172a; /* slate-900 */
+    --text-secondary: #334155; /* slate-700 */
+    --text-tertiary: #64748b; /* slate-500 */
+
+    --accent-primary: #0ea5e9; /* sky-500 - slightly bluer for contrast on white */
+    --accent-secondary: #0284c7; /* sky-600 */
+    --accent-text: #0369a1; /* sky-700 - darker for readability on light bg */
+
+    --border-primary: #cbd5e1; /* slate-300 */
+    --border-secondary: #94a3b8; /* slate-400 */
+  }
+
+  [data-theme='beige'] {
+    /* Beige Theme */
+    --bg-main: #f5f5dc; /* beige */
+    --bg-secondary: #fff8e1; /* amber-50ish */
+    --bg-tertiary: #ede0d4; /* warm beige/brownish */
+    
+    --text-primary: #422006; /* amber-950 */
+    --text-secondary: #78350f; /* amber-900 */
+    --text-tertiary: #92400e; /* amber-800 */
+
+    --accent-primary: #d97706; /* amber-600 */
+    --accent-secondary: #b45309; /* amber-700 */
+    --accent-text: #92400e; /* amber-800 */
+
+    --border-primary: #d6d3d1; /* stone-300 */
+    --border-secondary: #a8a29e; /* stone-400 */
+  }
+}
+
 @layer utilities {
   .scrollbar-thin {
     scrollbar-width: thin;
-    scrollbar-color: theme('colors.slate.700') theme('colors.slate.900');
+    scrollbar-color: var(--bg-tertiary) var(--bg-main);
   }
   .scrollbar-thin::-webkit-scrollbar {
     width: 8px;
     height: 8px;
   }
   .scrollbar-thin::-webkit-scrollbar-track {
-    background: theme('colors.slate.900');
+    background: var(--bg-main);
     border-radius: 4px;
   }
   .scrollbar-thin::-webkit-scrollbar-thumb {
-    background-color: theme('colors.slate.700');
+    background-color: var(--bg-tertiary);
     border-radius: 4px;
-    border: 2px solid theme('colors.slate.900');
+    border: 2px solid var(--bg-main);
   }
   .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-    background-color: theme('colors.slate.600');
+    background-color: var(--border-secondary);
   }
   .scrollbar-thin::-webkit-scrollbar-thumb:active {
-    background-color: theme('colors.slate.500');
+    background-color: var(--border-secondary);
   }
 }
 
