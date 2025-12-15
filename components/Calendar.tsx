@@ -1194,6 +1194,7 @@ const Calendar: React.FC<CalendarProps> = ({ scheduleText, manualContextText }) 
                 return (
                   <button
                     key={event.id}
+                    data-tour="calendar-event"
                     type="button"
                     onClick={(e) => {
                       e.stopPropagation();
@@ -1229,6 +1230,7 @@ const Calendar: React.FC<CalendarProps> = ({ scheduleText, manualContextText }) 
               {shouldShowButton && (
                 <button
                   type="button"
+                  data-tour="calendar-more"
                   onClick={(e) => {
                     e.stopPropagation();
                     toggleDayExpansion(dateKey);

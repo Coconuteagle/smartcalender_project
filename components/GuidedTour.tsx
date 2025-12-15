@@ -79,9 +79,14 @@ const GuidedTour: React.FC<GuidedTourProps> = ({ isOpen, steps, onClose }) => {
     };
 
     update();
+    // Some targets (e.g., chat input) can mount slightly after the tour opens due to layout/render timing.
+    // Observe DOM changes and retry positioning so the arrow/highlight consistently appears.
+    const observer = new MutationObserver(() => update());
+    observer.observe(document.body, { childList: true, subtree: true, attributes: true });
     window.addEventListener('resize', update);
     window.addEventListener('scroll', update, true);
     return () => {
+      observer.disconnect();
       window.removeEventListener('resize', update);
       window.removeEventListener('scroll', update, true);
     };

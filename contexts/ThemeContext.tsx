@@ -58,7 +58,7 @@ const COLORS: ThemeColors = {
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [theme, setTheme] = useState<ThemeType>(() => {
     const saved = (localStorage.getItem(THEME_STORAGE_KEY) ?? '').trim();
-    return saved === 'light' || saved === 'beige' || saved === 'dark' ? saved : 'dark';
+    return saved === 'light' || saved === 'beige' || saved === 'dark' ? saved : 'beige';
   });
 
   useEffect(() => {
