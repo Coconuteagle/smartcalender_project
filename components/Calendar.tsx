@@ -174,9 +174,11 @@ const saveUserEventsToStorage = (events: UserCalendarEvent[]) => {
 };
 
 const EVENT_FILTERS_STORAGE_KEY = 'smartcalendar:eventFilters';
+const EVENT_FILTERS_STORAGE_VERSION = 2;
 const ALL_EVENT_SOURCES: CalendarEventSource[] = ['manual', 'ai'];
 
 type StoredEventFilters = {
+  version?: number;
   categories?: unknown;
   sources?: unknown;
 };
@@ -196,6 +198,8 @@ const loadEventFiltersFromStorage = (): { categories: EventCategory[]; sources: 
     const candidate = parsed as StoredEventFilters;
     const categoriesRaw = candidate.categories;
     const sourcesRaw = candidate.sources;
+    const storedVersion = typeof candidate.version === 'number' ? candidate.version : 0;
+    const isLegacyFilters = storedVersion < EVENT_FILTERS_STORAGE_VERSION;
 
     const categoriesSet = new Set<EventCategory>();
     if (Array.isArray(categoriesRaw)) {
@@ -213,14 +217,26 @@ const loadEventFiltersFromStorage = (): { categories: EventCategory[]; sources: 
 
     let categories: EventCategory[] = [...EVENT_CATEGORIES];
     if (Array.isArray(categoriesRaw)) {
-      categories = EVENT_CATEGORIES.filter(c => categoriesSet.has(c));
-      if (categories.length === 0 && categoriesRaw.length > 0) categories = [...EVENT_CATEGORIES];
+      const filtered = EVENT_CATEGORIES.filter(c => categoriesSet.has(c));
+      if (filtered.length > 0) {
+        categories = filtered;
+      } else if (isLegacyFilters) {
+        categories = [...EVENT_CATEGORIES];
+      } else {
+        categories = [];
+      }
     }
 
     let sources: CalendarEventSource[] = [...ALL_EVENT_SOURCES];
     if (Array.isArray(sourcesRaw)) {
-      sources = ALL_EVENT_SOURCES.filter(s => sourcesSet.has(s));
-      if (sources.length === 0 && sourcesRaw.length > 0) sources = [...ALL_EVENT_SOURCES];
+      const filtered = ALL_EVENT_SOURCES.filter(s => sourcesSet.has(s));
+      if (filtered.length > 0) {
+        sources = filtered;
+      } else if (isLegacyFilters) {
+        sources = [...ALL_EVENT_SOURCES];
+      } else {
+        sources = [];
+      }
     }
 
     return { categories, sources };
@@ -233,7 +249,11 @@ const saveEventFiltersToStorage = (filters: { categories: EventCategory[]; sourc
   try {
     localStorage.setItem(
       EVENT_FILTERS_STORAGE_KEY,
-      JSON.stringify({ categories: filters.categories, sources: filters.sources } satisfies StoredEventFilters),
+      JSON.stringify({
+        version: EVENT_FILTERS_STORAGE_VERSION,
+        categories: filters.categories,
+        sources: filters.sources,
+      } satisfies StoredEventFilters),
     );
   } catch {
     // ignore storage errors (e.g., private mode / quota)
