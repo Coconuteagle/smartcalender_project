@@ -69,6 +69,8 @@ const GuidedTour: React.FC<GuidedTourProps> = ({ isOpen, steps, onClose }) => {
     if (!isOpen) return;
     if (!step) return;
 
+    let rafId = 0;
+
     const update = () => {
       const el = findTargetElement(step.target);
       if (!el) {
@@ -78,17 +80,23 @@ const GuidedTour: React.FC<GuidedTourProps> = ({ isOpen, steps, onClose }) => {
       setHighlight(rectFromElement(el));
     };
 
-    update();
-    // Some targets (e.g., chat input) can mount slightly after the tour opens due to layout/render timing.
+    const scheduleUpdate = () => {
+      if (rafId) cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(update);
+    };
+
+    scheduleUpdate();
+    // Some targets can mount slightly after the tour opens due to layout/render timing.
     // Observe DOM changes and retry positioning so the arrow/highlight consistently appears.
-    const observer = new MutationObserver(() => update());
-    observer.observe(document.body, { childList: true, subtree: true, attributes: true });
-    window.addEventListener('resize', update);
-    window.addEventListener('scroll', update, true);
+    const observer = new MutationObserver(() => scheduleUpdate());
+    observer.observe(document.body, { childList: true, subtree: true });
+    window.addEventListener('resize', scheduleUpdate);
+    window.addEventListener('scroll', scheduleUpdate, true);
     return () => {
+      if (rafId) cancelAnimationFrame(rafId);
       observer.disconnect();
-      window.removeEventListener('resize', update);
-      window.removeEventListener('scroll', update, true);
+      window.removeEventListener('resize', scheduleUpdate);
+      window.removeEventListener('scroll', scheduleUpdate, true);
     };
   }, [isOpen, step?.target]);
 
