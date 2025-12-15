@@ -274,7 +274,7 @@ interface ChatbotProps {
 
 const Chatbot: React.FC<ChatbotProps> = ({ manualContextText }) => {
   const { apiKey, openRouterApiKey, aiProviderPreference, openRouterModel } = useApiKey();
-  const { colors } = useTheme();
+  const { colors, theme } = useTheme();
   const [ai, setAi] = useState<GoogleGenAI | null>(null);
   const [chat, setChat] = useState<Chat | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -907,7 +907,13 @@ ${searchInstruction}
       </h2>
 
       {!apiKeyAvailable && error && (
-        <div className="p-3 my-2 text-sm text-yellow-300 bg-yellow-700/30 border border-yellow-600 rounded-md text-center flex-shrink-0">
+        <div
+          className={`p-3 my-2 text-sm rounded-md text-center flex-shrink-0 border ${
+            theme === 'dark'
+              ? 'text-yellow-200 bg-yellow-900/30 border-yellow-700'
+              : 'text-amber-950 bg-amber-200/80 border-amber-300'
+          }`}
+        >
           {error}
         </div>
       )}

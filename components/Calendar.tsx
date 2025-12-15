@@ -103,6 +103,33 @@ const isEventCategory = (value: unknown): value is EventCategory =>
 const isCalendarEventSource = (value: unknown): value is CalendarEventSource =>
   value === 'manual' || value === 'ai';
 
+const INFER_CATEGORY_RULES: Array<{ category: EventCategory; keywords: string[] }> = [
+  { category: '학운위', keywords: ['학운위', '학교운영위원회', '운영위원회'] },
+  { category: '공유재산', keywords: ['공유재산'] },
+  { category: '민원', keywords: ['민원'] },
+  { category: '회의', keywords: ['회의', '협의', '심의', '정담회'] },
+  { category: '계약', keywords: ['계약', '입찰', '발주', '용역', '나라장터', '견적'] },
+  { category: '물품', keywords: ['물품', '구매', '수급관리', '인증신제품', 'NEP'] },
+  { category: '세입', keywords: ['세입', '징수', '전입금', '수입', '수납'] },
+  { category: '예산', keywords: ['예산', '추경', '세출예산', '집행률', '발전기금', '본예산', '결산', '정산', '이월금', '명시이월'] },
+  { category: '급여', keywords: ['급여', '연말정산', '근로소득', '4대보험', '퇴직금', '가족수당', '자녀학비', '초과근무', '시간외수당', '일용근로', '인건비', '강사'] },
+  { category: '지출', keywords: ['지출', '공공요금', '업무추진비', '신용카드', '카드', '지급'] },
+  { category: '인사', keywords: ['인사', '전보', '발령', '복무', '휴직', '근무성적', '교육공무직', '지방공무원', '교직원'] },
+  { category: '시설', keywords: ['시설', '소방', '전기', '가스', '석면', '승강기', '저수조', '공기정화', '화재', '동파', '폭설', '안전점검', '정기안전점검', '보수', '유지보수'] },
+] as const;
+
+const inferEventCategoryFromTitle = (title: string): EventCategory | null => {
+  const normalized = title.replace(/[\s\u00A0\u200B\uFEFF]+/g, '').trim();
+  if (!normalized) return null;
+
+  for (const rule of INFER_CATEGORY_RULES) {
+    for (const keyword of rule.keywords) {
+      if (normalized.includes(keyword)) return rule.category;
+    }
+  }
+  return null;
+};
+
 const loadUserEventsFromStorage = (): UserCalendarEvent[] => {
   try {
     const raw = localStorage.getItem(USER_EVENTS_STORAGE_KEY);
@@ -328,6 +355,9 @@ const Calendar: React.FC<CalendarProps> = ({ scheduleText, manualContextText }) 
   };
 
   const toggleCategoryFilter = (category: EventCategory) => {
+    if (selectedSources.length === 0) {
+      setSelectedSources([...ALL_EVENT_SOURCES]);
+    }
     setSelectedCategories((prev) => {
       const nextSet = new Set(prev);
       if (nextSet.has(category)) {
@@ -340,6 +370,9 @@ const Calendar: React.FC<CalendarProps> = ({ scheduleText, manualContextText }) 
   };
 
   const toggleSourceFilter = (source: CalendarEventSource) => {
+    if (selectedCategories.length === 0) {
+      setSelectedCategories([...EVENT_CATEGORIES]);
+    }
     setSelectedSources((prev) => {
       const nextSet = new Set(prev);
       if (nextSet.has(source)) {
@@ -470,7 +503,7 @@ const Calendar: React.FC<CalendarProps> = ({ scheduleText, manualContextText }) 
           const monthMatch = monthStr.match(/(\d+)월/);
           const dayMatch = dayStr.match(/(\d+)일/);
 
-          const category = isEventCategory(categoryStr) ? categoryStr : DEFAULT_EVENT_CATEGORY;
+          const explicitCategory = isEventCategory(categoryStr) ? categoryStr : null;
 
           if (monthMatch && dayMatch && titlesStr) {
             const monthIdx = parseInt(monthMatch[1], 10) - 1; // 0-indexed month
@@ -481,6 +514,8 @@ const Calendar: React.FC<CalendarProps> = ({ scheduleText, manualContextText }) 
 
               for (let yearToCreate = currentSystemYear; yearToCreate <= endYear; yearToCreate++) {
                 eventTitles.forEach(title => {
+                  const inferredCategory = inferEventCategoryFromTitle(title);
+                  const category = explicitCategory ?? inferredCategory ?? DEFAULT_EVENT_CATEGORY;
                   const eventDate = new Date(yearToCreate, monthIdx, day);
                   if (eventDate.getFullYear() === yearToCreate && eventDate.getMonth() === monthIdx && eventDate.getDate() === day) {
                     newEvents.push({
@@ -1482,7 +1517,13 @@ const Calendar: React.FC<CalendarProps> = ({ scheduleText, manualContextText }) 
               </>
             )}
             {!aiProvider && (!selectedEvent?.id || (!eventDescriptions[selectedEvent!.id] && !isGeneratingDescription && !generationError)) && (
-              <div className="text-sm text-yellow-400 bg-yellow-900/20 border border-yellow-700 p-3 rounded-md mt-3">
+              <div
+                className={`text-sm p-3 rounded-md mt-3 border ${
+                  theme === 'dark'
+                    ? 'text-yellow-200 bg-yellow-900/30 border-yellow-700'
+                    : 'text-amber-950 bg-amber-200/80 border-amber-300'
+                }`}
+              >
                 AI 기능을 사용하려면 API 키가 필요합니다. 현재 설정되어 있지 않습니다.
               </div>
             )}
